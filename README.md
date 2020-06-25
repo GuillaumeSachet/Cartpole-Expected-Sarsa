@@ -5,7 +5,7 @@ Results :
 
 ![](Pictures/Cartpole_v1.png "300 episodes")
 
-![](Pictures/Cartpole_v1.gif "300th episodes")
+![](Pictures/Cartpole_v1.gif "Last episode")
 
 Training took 30 minutes.
 
