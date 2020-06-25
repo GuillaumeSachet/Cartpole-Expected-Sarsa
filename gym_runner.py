@@ -9,7 +9,8 @@ class GymRunner:
     
     def run(self, agent, num_episodes,timestep, save):
         if save:
-            self.env = gym.wrappers.Monitor(self.env, self.monitor_dir+'/eval',
+            self.env = gym.wrappers.Monitor(self.env,
+                                            self.monitor_dir+'/eval/{}'.format(str(agent.total_replay)),
                        video_callable=lambda ep_id : True, force = True, mode = 'evaluation')
         for episode in range(num_episodes):
             state = self.env.reset().reshape(1, self.env.observation_space.shape[0])
@@ -23,11 +24,13 @@ class GymRunner:
                     break
             
 
-    def train(self, agent, num_episodes,monitor,render_freq = 10):
+    def train(self, agent, num_episodes, batch_size = 8, num_replay = 100, monitor = False, render_freq = 10):
+        history = []
         if monitor:
-            self.env = gym.wrappers.Monitor(self.env, self.monitor_dir+'/train', 
-                               video_callable=lambda ep_id :(ep_id+1) % render_freq == 0 or ep_id == 0,
-                                            resume = True, mode = 'training')  
+            self.env = gym.wrappers.Monitor(self.env,
+                                 self.monitor_dir+'/train',
+                                 video_callable=lambda ep_id :(ep_id+1) % render_freq == 0 or ep_id == 0, 
+                                 resume = True, mode = 'training')
         for episode in range(num_episodes):
             state = self.env.reset().reshape(1, self.env.observation_space.shape[0])
             total_reward = 0
@@ -42,6 +45,9 @@ class GymRunner:
                     break
             print("episode: {}/{} | score: {} | time: {:.2f}".format(
             episode + 1, num_episodes, total_reward, time.time()-time_start))
+            agent.experience_replay(batch_size, num_replay)
+            history.append(total_reward)
+        return history
     
     def close(self):
         self.env.close()

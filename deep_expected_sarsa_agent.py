@@ -14,7 +14,7 @@ class DeepExpectedSarsaAgent():
         self.gamma = agent_config['gamma']
         self.tau = agent_config['tau']
         self.replay_buffer = ReplayBuffer(agent_config['replay_buffer_size'])
-        self.total_timestep = 0
+        self.total_replay = 0
         self.last_state = None
         self.last_action = None
             
@@ -25,7 +25,7 @@ class DeepExpectedSarsaAgent():
         return action
     
     def experience_replay(self, batch_size, num_replay,verb = 0):
-        self.total_timestep += num_replay
+        self.total_replay += num_replay
         if len(self.replay_buffer.memory) > batch_size*4:
             self.model2.set_weights(self.model.get_weights())
             for _ in range(num_replay):
@@ -41,7 +41,7 @@ class DeepExpectedSarsaAgent():
                 for index,a in enumerate(actions):
                     y_batch[index][a] = target_vec[index]
                 self.model.fit(x_batch, y_batch, batch_size=batch_size, verbose=verb,epochs=1)
-            print('Experience replay done for {} replays'.format(num_replay))
+            print('Experience replay done {} times'.format(num_replay))
         else : print('Not enough memory in replay buffer')
         
     def reset(self, state):
@@ -59,15 +59,15 @@ class DeepExpectedSarsaAgent():
     def save_weights(self, file):
         filehandler = open(file+'_replay_buffer', 'wb') 
         pickle.dump(self.replay_buffer, filehandler)
-        filehandler = open(file+'_total_timestep', 'wb') 
-        pickle.dump(self.total_timestep, filehandler)
+        filehandler = open(file+'_total_replay', 'wb') 
+        pickle.dump(self.total_replay, filehandler)
         self.model.save_weights(file)
         print('Saved')
     
     def load_weights(self,file):
         filehandler = open(file+'_replay_buffer', 'rb') 
         self.replay_buffer = pickle.load(filehandler)
-        filehandler = open(file+'_total_timestep', 'rb') 
-        self.total_timestep = pickle.load(filehandler) 
+        filehandler = open(file+'_total_replay', 'rb') 
+        self.total_replay = pickle.load(filehandler) 
         self.model.load_weights(file)
         print('Loaded')
